@@ -5,12 +5,10 @@ SAVEHIST=100000
 
 export PATH="$HOME/.local/bin":$PATH
 
-sshvars=($SSH_CLIENT)
-
-if [[ ${#sshvars[@]} -eq 0 ]]; then
-  export ZSH_MACHINE_NAME="local"
+if [[ -n "$SSH_CLIENT" ]]; then
+  export ZSH_MACHINE_NAME="${USER}@$(echo $SSH_CLIENT | awk '{print $1 ":" $3}')"
 else
-  export ZSH_MACHINE_NAME="${USER}@${sshvars[0]}:${sshvars[2]}"
+  export ZSH_MACHINE_NAME="local"
 fi
 
 if [ -f ~/.zsh_userenv ]; then
