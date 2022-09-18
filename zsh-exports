@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+HISTSIZE=100000
+SAVEHIST=100000
+
+export PATH="$HOME/.local/bin":$PATH
+
+sshvars=($SSH_CLIENT)
+
+if [[ ${#sshvars[@]} -eq 0 ]]; then
+  export ZSH_MACHINE_NAME="local"
+else
+  export ZSH_MACHINE_NAME="${USER}@${sshvars[0]}:${sshvars[2]}"
+fi
+
+if [ -f ~/.zsh_userenv ]; then
+  source ~/.zsh_userenv
+fi

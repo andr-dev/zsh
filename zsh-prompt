@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+## autoload vcs and colors
+autoload -Uz vcs_info
+autoload -U colors && colors
+
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$reset_color%}%{$fg[green]%}["
+ZSH_THEME_GIT_PROMPT_SUFFIX="]%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_CLEAN=""
+
+function __git_prompt_git() {
+  GIT_OPTIONAL_LOCKS=0 command git "$@"
+}
+
+# enable only git 
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:git*:*' get-revision true
+
+# setup a hook that runs before every ptompt. 
+precmd_vcs_info() { vcs_info }
+precmd_functions+=( precmd_vcs_info )
+setopt prompt_subst
+
+# add a function to check for untracked files in the directory.
+# from https://github.com/zsh-users/zsh/blob/master/Misc/vcs_info-examples
+zstyle ':vcs_info:git*+set-message:*' hooks git-rstatus
+
++vi-git-rstatus(){
+    if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]]; then
+        local   staged=$(__git_prompt_git status --porcelain 2>/dev/null | grep -e "^[MADRCU]" | wc -l)
+        local unstaged=$(__git_prompt_git status --porcelain 2>/dev/null | grep -e "^[MADRCU? ][MADRCU?]" | wc -l)
+        local  stashed=$(git stash list 2>/dev/null | wc -l)
+
+        if [ "$unstaged" -eq "0" ]; then
+            hook_com[unstaged]="%{$fg[white]%}"
+        else
+            hook_com[unstaged]="%{$fg[red]%}"
+        fi
+
+        hook_com[unstaged]+="[${unstaged}]%{$reset_color%}"
+
+        if [ "$staged" -eq "0" ]; then
+            hook_com[staged]="%{$fg[white]%}"
+        else
+            hook_com[staged]="%{$fg[green]%}"
+        fi
+
+        hook_com[staged]+="[${staged}]%{$reset_color%}"
+
+        if [ "$stashed" -eq "0" ]; then
+            hook_com[misc]="%{$fg[white]%}"
+        else
+            hook_com[misc]="%{$fg[yellow]%}"
+        fi
+
+        hook_com[misc]+="[${stashed}]%{$reset_color%}"
+    fi
+}
+
+zstyle ':vcs_info:git:*' formats "${ZSH_THEME_GIT_PROMPT_PREFIX}%b${ZSH_THEME_GIT_PROMPT_SUFFIX}" "%u%c%m[%7.7i]"
+zstyle ':vcs_info:git:*' actionformats "${ZSH_THEME_GIT_PROMPT_PREFIX}%b|%a${ZSH_THEME_GIT_PROMPT_SUFFIX}" "%u%c%m[%7.7i]"
+
+get_time() {
+  echo -n "[%{$reset_color%}$(date "+%y.%m.%d %H:%M:%S")]"
+}
+
+PROMPT='$(get_time)${vcs_info_msg_0_}%{$fg[blue]%}[%~% ]%{$reset_color%}%B$%b '
+
+RPROMPT='%{$reset_color%}${vcs_info_msg_1_}'
+
