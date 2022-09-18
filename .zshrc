@@ -4,9 +4,10 @@ export ZDOTDIR=$HOME/.config/zsh
 
 HISTFILE=~/.zsh_history
 setopt appendhistory
+export HISTORY_IGNORE=clear
 
 # some useful options (man zshoptions)
-setopt autocd extendedglob nomatch menucomplete
+setopt nomatch menucomplete
 setopt interactive_comments
 stty stop undef		# Disable ctrl-s to freeze terminal.
 zle_highlight=('paste:none')
@@ -16,14 +17,16 @@ unsetopt BEEP
 
 # completions
 autoload -Uz compinit
+
 zstyle ':completion:*' menu select
-# zstyle ':completion::complete:lsof:*' menu yes select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+#
 zmodload zsh/complist
-# compinit
 _comp_options+=(globdots)		# Include hidden files.
 
 autoload -U up-line-or-beginning-search
 autoload -U down-line-or-beginning-search
+
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 
@@ -39,16 +42,22 @@ zsh_add_file "zsh-title"
 zsh_add_file "zsh-aliases"
 zsh_add_file "zsh-prompt"
 
-# Plugins
-# zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
-
 # Key-bindings
-bindkey "^p" up-line-or-beginning-search # Up
-bindkey "^n" down-line-or-beginning-search # Down
-bindkey "^k" up-line-or-beginning-search # Up
-bindkey "^j" down-line-or-beginning-search # Down
+bindkey "^i" up-line-or-beginning-search # Up
+bindkey "^k" down-line-or-beginning-search # Down
+bindkey "^l" forward-word
+bindkey "^j" backward-word
 
-# FZF 
+bindkey "^u" expand-or-complete
+
+clear_screen () {
+  clear;
+  zle reset-prompt
+}
+zle -N clear_screen
+bindkey "^o" clear_screen
+
+# FZF
 [ -f /usr/share/fzf/completion.zsh ] && source /usr/share/fzf/completion.zsh
 [ -f /usr/share/fzf/key-bindings.zsh ] && source /usr/share/fzf/key-bindings.zsh
 [ -f /usr/share/doc/fzf/examples/completion.zsh ] && source /usr/share/doc/fzf/examples/completion.zsh
