@@ -65,8 +65,20 @@ bindkey "^o" clear_screen
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f $ZDOTDIR/completion/_fnm ] && fpath+="$ZDOTDIR/completion/"
 
-compinit
+# Load compinit once a day
+if [ $(($(date +'%s') + 86400)) -le $(stat -c %Y ${ZDOTDIR}/.zcompdump) ]; then
+	compinit
+	touch ${ZDOTDIR}/.zcompdump
+else
+	compinit -C
+fi
+
+# NVM
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Environment variables set everywhere
 export EDITOR="nvim"
 export TERMINAL="alacritty"
+
